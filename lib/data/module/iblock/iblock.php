@@ -18,6 +18,8 @@ Loc::loadMessages(__FILE__);
 
 class Iblock extends BaseData
 {
+	protected $iblocksCache = [];
+	
 	protected function configure()
 	{
 		Loader::includeModule('iblock');
@@ -28,6 +30,65 @@ class Iblock extends BaseData
 			'IBLOCK_TYPE_ID' => new Link(Type::getInstance()),
 			'SITE' => new Link(Site::getInstance()),
 		));
+	}
+
+	/**
+	 * @param \Intervolga\Migrato\Data\RecordId $id
+	 *
+	 * @return string
+	 */
+	public function generateXmlId($id)
+	{
+		if ($iblock = $this->getById($id->getValue()))
+		{
+			if (! empty($iblock['CODE']))
+			{
+				$xmlId = "{$iblock['LID']}_{$iblock['IBLOCK_TYPE_ID']}_{$iblock['CODE']}";
+				
+				$this->setXmlId($id, $xmlId);
+				
+				return $xmlId;
+			}
+		}
+		
+		parent::generateXmlId($id);
+	}
+	
+	/**
+	 *	@param numeric $id
+	 */
+	public function getById($id)
+	{
+		if (! isset($this->iblocksCache[$id]))
+		{
+			$filter = [
+				'ID' => $id,
+			];
+			
+			$getList = \CIBlock::GetList($order, $filter);
+			if ($iblock = $getList->fetch())
+			{
+				$this->iblocksCache[$id] = $iblock;
+			}
+		}
+		
+		return $this->iblocksCache[$id];
+	}
+
+	/**
+	 * @param \Intervolga\Migrato\Data\RecordId $id
+	 * @param string $xmlId
+	 *
+	 * @throws \Bitrix\Main\NotImplementedException
+	 */
+	public function setXmlId($id, $xmlId)
+	{
+		if (isset($this->iblocksCache[$id->getValue()]))
+		{
+			$this->iblocksCache[$id->getValue()]['XML_ID'] = $xmlId;
+		}
+		
+		return parent::setXmlId($id, $xmlId);
 	}
 
 	public function getList(array $filter = array())
@@ -42,6 +103,8 @@ class Iblock extends BaseData
 		$getList = \CIBlock::GetList($order, $iblockFilter);
 		while ($iblock = $getList->fetch())
 		{
+			$this->iblocksCache[$iblock['ID']] = $iblock;
+			
 			$record = new Record($this);
 			$record->setXmlId($iblock["XML_ID"]);
 			$record->setId(RecordId::createNumericId($iblock["ID"]));

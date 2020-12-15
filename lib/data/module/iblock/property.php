@@ -10,6 +10,7 @@ use Intervolga\Migrato\Data\Record;
 use Intervolga\Migrato\Data\RecordId;
 use Intervolga\Migrato\Data\Link;
 use Intervolga\Migrato\Data\Value;
+use Intervolga\Migrato\Tool\Code;
 use Intervolga\Migrato\Tool\ExceptionText;
 use Intervolga\Migrato\Tool\XmlIdProvider\OrmXmlIdProvider;
 
@@ -31,6 +32,41 @@ class Property extends BaseData
 		$this->setReferences(array(
 			'LINK_IBLOCK_ID' => new Link(Iblock::getInstance()),
 		));
+	}
+
+	/**
+	 * @param \Intervolga\Migrato\Data\RecordId $id
+	 *
+	 * @return string
+	 */
+	public function generateXmlId($id)
+	{
+		$getList = PropertyTable::getList([
+			'filter' => ['ID' => $id->getValue()],
+		]);
+		
+		if ($property = $getList->fetch())
+		{
+			$propCode = $property['CODE'];
+			if (empty($propCode))
+			{
+				$arParams = [
+					'change_case' => false,
+					'max_len' => 50,
+				];
+				$propCode = Code::translit($property['NAME'], 'ru', $arParams);
+			}
+			
+			$iblock = Iblock::getInstance()->getById($property['IBLOCK_ID']);
+			
+			$xmlId = '.'.md5($iblock['XML_ID']) . '_' . mb_strtolower($propCode);
+			
+			$this->setXmlId($id, $xmlId);
+				
+			return $xmlId;
+		}
+		
+		parent::generateXmlId($id);
 	}
 
 	public function getList(array $filter = array())
