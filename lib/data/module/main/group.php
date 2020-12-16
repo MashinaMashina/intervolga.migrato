@@ -6,6 +6,7 @@ use Intervolga\Migrato\Data\BaseData;
 use Intervolga\Migrato\Data\Record;
 use Intervolga\Migrato\Data\RecordId;
 use Intervolga\Migrato\Tool\ExceptionText;
+use Intervolga\Migrato\Tool\Code;
 use Intervolga\Migrato\Data\Value;
 
 Loc::loadMessages(__FILE__);
@@ -145,7 +146,14 @@ class Group extends BaseData
 		}
 		else
 		{
-			$xmlId = parent::makeXmlId();
+			$element = \CGroup::getByID($id->getValue())->fetch();
+			
+			$arParams = [
+				'change_case' => 'U',
+				'max_len' => 50,
+			];
+			
+			$xmlId = Code::translit($element['NAME'] . '_' . $element['DESCRIPTION'], 'ru', $arParams);
 		}
 		$this->setXmlId($id, $xmlId);
 		return $xmlId;
