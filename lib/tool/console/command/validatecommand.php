@@ -181,7 +181,29 @@ class ValidateCommand extends BaseCommand
 	protected function getErrorType(Record $record)
 	{
 		$errorType = 0;
-		if ($record->getXmlId())
+		
+		$xmlId = $record->getXmlId();
+		
+		$randomGenerated = false;
+		// foreach(array(
+			// "iblock" => "ibl",
+			// "element" => "el",
+			// "section" => "sect",
+			// "highloadblock" => "hlb",
+			// "field" => "fld",
+			// "property" => "prop",
+			// "group" => "grp",
+			// "event" => "evt",
+			// "permission" => "perm",
+		// ) as $k => $v)
+		// {
+			// if (strpos($xmlId, $v) !== false)
+			// {
+				// $randomGenerated = true;
+			// }
+		// }
+		
+		if ($xmlId and ! $randomGenerated)
 		{
 			if ($this->isValidXmlId($record->getXmlId()))
 			{

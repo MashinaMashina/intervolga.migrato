@@ -82,6 +82,8 @@ abstract class BaseXmlIdProvider
 			array_values($replace),
 			$prefix
 		);
+		var_dump($dataClass);
+		die('vot ti i popalsya');
 		$xmlid = strrev(uniqid("", true));
 		return static::formatXmlId($xmlid, $prefix);
 	}
